@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测测你是哪种小狗 🐾</title>
+<meta name="description" content="12 道生活里的小事，测测你是哪种小狗。测完还能生成一张「领养卡」，分享给你在意的人。">
+<meta property="og:title" content="测测你是哪种小狗 🐾">
+<meta property="og:description" content="你心里住着哪只小狗？3 分钟测完，生成你的专属领养卡。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='34' fill='%234F6B4F'/></svg>">
+<style>
+  :root{
+    --bg:#F6F2EA;
+    --card:#FFFCF6;
+    --ink:#2A2622;
+    --ink2:#565049;
+    --muted:#847D73;
+    --accent:#4F6B4F;
+    --accent-dk:#3C533C;
+    --accent-soft:#E8EEE4;
+    --butter:#8FAE8B;
+    --sage:#4F6B4F;
+    --line:#E6DFD3;
+    --shadow:0 10px 28px -18px rgba(42,38,34,.22);
+    --hard:0 1px 0 rgba(42,38,34,.04);
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{overflow-x:clip;}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+    min-height:100dvh;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(79,107,79,.06), transparent 30%),
+      radial-gradient(circle at 88% 92%, rgba(79,107,79,.04), transparent 34%);
+  }
+  ::selection{background:#F7D9C6;color:var(--ink);}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px;}
+
+  /* 纸纹 */
+  .grain{position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  .screen{display:none;}
+  .screen.active{display:block;animation:screenIn .4s var(--ease) both;}
+  @keyframes screenIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){.screen.active{animation:none;}}
+
+  .wrap{max-width:660px;margin:0 auto;padding:40px 22px 64px;}
+
+  /* ---------- 落地页 ---------- */
+  .landing{text-align:center;padding-top:56px;}
+  .kicker{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--accent-dk);
+    background:var(--accent-soft);border:1px solid var(--line);border-radius:999px;padding:6px 15px;letter-spacing:.04em;}
+  .landing h1{font-size:clamp(34px,7vw,52px);font-weight:800;letter-spacing:.01em;line-height:1.22;margin:22px 0 14px;}
+  .landing h1 .hl{position:relative;display:inline-block;white-space:nowrap;}
+  .landing h1 .hl svg{position:absolute;left:0;bottom:-8px;width:100%;height:12px;}
+  .landing .lead{font-size:16px;color:var(--ink2);max-width:440px;margin:0 auto;}
+  .landing .fine{font-size:12.5px;color:var(--muted);margin-top:16px;}
+
+  .btn{font-family:inherit;font-size:15px;font-weight:700;border-radius:13px;padding:13px 26px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--ink);cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease),background-color .18s var(--ease),border-color .18s var(--ease);
+    box-shadow:var(--shadow);}
+  .btn:hover{transform:translateY(-2px);border-color:var(--accent);}
+  .btn:active{transform:translateY(0) scale(.98);box-shadow:none;}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 12px 24px -16px rgba(79,107,79,.6);}
+  .btn.primary:hover{background:var(--accent-dk);border-color:var(--accent-dk);}
+  .btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted);}
+  .btn.ghost:hover{background:var(--accent-soft);box-shadow:none;}
+
+  /* ---------- 答题 ---------- */
+  .quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:13.5px;color:var(--muted);}
+  .link{background:none;border:none;font-family:inherit;font-size:13.5px;color:var(--muted);cursor:pointer;padding:6px 2px;}
+  .link:hover{color:var(--accent-dk);}
+  .progress{height:10px;background:#EFE4D2;border-radius:999px;overflow:hidden;border:1px solid var(--line);}
+  .progress > span{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .35s var(--ease);}
+  .question-card{margin-top:26px;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:28px 26px;box-shadow:var(--shadow);}
+  .q-index{font-family:var(--serif);font-size:14px;color:var(--accent-dk);letter-spacing:.14em;margin-bottom:8px;}
+  .question-card h2{font-size:clamp(20px,4.6vw,26px);font-weight:800;line-height:1.45;letter-spacing:.01em;margin-bottom:22px;}
+  .options{display:flex;flex-direction:column;gap:12px;}
+  .opt{display:flex;align-items:center;gap:14px;text-align:left;font-family:inherit;font-size:15px;color:var(--ink);
+    background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:15px 16px;cursor:pointer;
+    transition:border-color .16s var(--ease),background-color .16s var(--ease);}
+  .opt .badge{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:14px;
+    background:var(--accent-soft);color:var(--accent-dk);transition:background-color .16s var(--ease),color .16s var(--ease);}
+  .opt:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .opt:hover .badge{background:var(--accent);color:#fff;}
+  .opt.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .opt.selected .badge{background:var(--accent);color:#fff;}
+  .opt:active{transform:scale(.985);}
+  .opt .txt{flex:1;}
+
+  /* ---------- 结果 ---------- */
+  .result-head{text-align:center;padding-top:8px;}
+  .result-head .kicker{margin-bottom:18px;}
+  .result-head h1{font-size:clamp(30px,6.5vw,44px);font-weight:800;margin-top:4px;}
+  .result-sub{font-size:17px;color:var(--accent-dk);font-weight:700;margin-top:2px;}
+  .match{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:700;color:var(--accent-dk);
+    background:var(--accent-soft);border:1px solid var(--line);border-radius:999px;padding:5px 14px;}
+  .tags{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:16px 0 20px;}
+  .tag{font-size:12.5px;font-weight:700;padding:5px 14px;border-radius:999px;background:var(--accent-soft);color:var(--accent-dk);border:1px solid var(--line);}
+  .result-card{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:8px 24px;box-shadow:var(--shadow);}
+  .result-card h3{font-size:13px;font-weight:800;color:var(--accent-dk);letter-spacing:.06em;margin:18px 0 6px;}
+  .result-card p{font-size:14.5px;color:var(--ink2);line-height:1.85;}
+  .result-card p.small{font-size:13.5px;}
+  .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;}
+  .result-actions .btn{padding:13px 22px;font-size:14.5px;}
+
+  /* ---------- 弹窗 / 领养卡 ---------- */
+  .modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(40,30,22,.55);backdrop-filter:blur(6px);}
+  .modal.show{display:flex;}
+  .modal-box{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:16px;max-width:420px;width:100%;max-height:94dvh;overflow-y:auto;box-shadow:var(--shadow);animation:screenIn .3s var(--ease) both;}
+  .modal-head{font-weight:800;font-size:15px;text-align:center;margin-bottom:10px;color:var(--ink2);}
+  #share-canvas{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line);}
+  .modal-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .modal-actions .btn{flex:1;min-width:110px;padding:12px 14px;font-size:14px;text-align:center;}
+
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#FFF6EA;
+    padding:10px 20px;border-radius:999px;font-size:13px;opacity:0;visibility:hidden;transition:all .3s var(--ease);z-index:120;}
+  .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
+  @media (max-width:520px){
+    .wrap{padding:28px 16px 52px;}
+    .question-card{padding:22px 18px;border-radius:20px;}
+    .result-card{padding:6px 18px;}
+    .dog-cloud .shelf-dog{width:56px;height:56px;}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- 落地页 -->
+<section id="screen-landing" class="screen active">
+  <div class="wrap landing">
+    <span class="kicker">犬系人格小测试</span>
+    <h1>测测你是<br class="br-m">哪种<span class="hl">小狗<svg viewBox="0 0 120 12" preserveAspectRatio="none"><path d="M2 8 Q30 1 60 6 T118 5" stroke="#4F6B4F" stroke-width="4" fill="none" stroke-linecap="round"/></svg></span></h1>
+    <p class="lead">12 道生活里的小事，看看你心里，住着哪一只小狗。</p>
+    <div style="height:26px"></div>
+    <button class="btn primary" id="start-btn" type="button">开始测测</button>
+    <p class="fine">约 3 分钟 · 12 道题 · 纯属娱乐</p>
+  </div>
+</section>
+
+<!-- 答题 -->
+<section id="screen-quiz" class="screen">
+  <div class="wrap">
+    <div class="quiz-top">
+      <button class="link" id="back-btn" type="button">← 上一题</button>
+      <span id="q-count">第 1 / 12 题</span>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+    <div class="question-card">
+      <div class="q-index" id="q-index">Q1</div>
+      <h2 id="q-text"></h2>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 结果 -->
+<section id="screen-result" class="screen">
+  <div class="wrap">
+    <div class="result-head" aria-live="polite">
+      <span class="kicker">你的犬系人格是</span>
+      <h1 id="result-name"></h1>
+      <div class="result-sub" id="result-title"></div>
+      <div class="match" id="match"></div>
+    </div>
+    <div class="tags" id="result-tags"></div>
+    <div class="result-card">
+      <h3>性格解析</h3><p id="result-desc"></p>
+      <h3>可爱的小毛病</h3><p id="result-quirk"></p>
+      <h3>相处指南</h3><p id="result-guide"></p>
+      <h3>最佳拍档</h3><p class="small" id="result-best"></p>
+      <h3>领养条件</h3><p class="small" id="result-cond"></p>
+    </div>
+    <div class="result-actions">
+      <button class="btn primary" id="share-btn" type="button">生成分享卡</button>
+      <button class="btn" id="copy-btn" type="button">复制文案</button>
+      <button class="btn ghost" id="retake-btn" type="button">再测一次</button>
+    </div>
+  </div>
+</section>
+
+<!-- 领养卡弹窗 -->
+<div class="modal" id="share-modal" role="dialog" aria-modal="true" aria-label="分享卡">
+  <div class="modal-box">
+    <div class="modal-head">你的专属分享卡</div>
+    <canvas id="share-canvas" width="1080" height="1440"></canvas>
+    <div class="modal-actions">
+      <button class="btn primary" id="download-btn" type="button">下载图片</button>
+      <button class="btn" id="copy2-btn" type="button">复制文案</button>
+      <button class="btn ghost" id="close-modal" type="button">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ================= 数据 ================= */
+  var POOL = [
+    { q:'如果此刻可以停留在一个画面里，你会选？', opts:[
+      { t:'海边日落，风把头发吹乱', add:{E:2,C:1,S:1} },
+      { t:'雨后深夜，窗边一盏暖灯', add:{I:2,M:2} },
+      { t:'山间清晨，雾还没散', add:{C:2,I:1} },
+      { t:'城市天台，看灯火一盏盏亮起', add:{S:1,C:1,E:1} }
+    ]},
+    { q:'你更喜欢怎样的相遇？', opts:[
+      { t:'热闹人群里，一眼看见彼此', add:{S:2,E:1} },
+      { t:'安静书店里，同时伸手拿同一本书', add:{I:1,M:1,C:1} },
+      { t:'旅途中偶然同路，聊了一路', add:{C:2,E:1,S:1} },
+      { t:'认识很久后，某个瞬间忽然心动', add:{M:2,I:1} }
+    ]},
+    { q:'一首歌最能打动你的，是哪个部分？', opts:[
+      { t:'副歌响起时，忍不住跟着唱', add:{E:2,S:1} },
+      { t:'某一句歌词，像在说你', add:{M:2,I:1} },
+      { t:'前奏一响，回忆就回来了', add:{M:1,I:1} },
+      { t:'结尾的留白，余音很久', add:{I:2,C:1} }
+    ]},
+    { q:'深夜失眠时，你更像？', opts:[
+      { t:'想找个人说说话', add:{S:2,M:1} },
+      { t:'戴上耳机，一个人待到天亮', add:{I:2,M:1} },
+      { t:'翻出旧照片，慢慢看', add:{M:2,I:1} },
+      { t:'写点什么，把心事放进去', add:{I:1,M:1,C:1} }
+    ]},
+    { q:'如果养一只小狗，你希望和它的关系是？', opts:[
+      { t:'每天一起出门，把世界逛一遍', add:{E:2,S:1} },
+      { t:'各忙各的，但一回头它就在', add:{I:2,M:1} },
+      { t:'它懂你的情绪，你懂它的沉默', add:{M:2,C:1,I:1} },
+      { t:'它黏着你，你也习惯了被需要', add:{S:2,M:1} }
+    ]},
+    { q:'你理想中的周末，是？', opts:[
+      { t:'去一个没去过的地方', add:{C:2,E:1} },
+      { t:'在家把日子过得很慢', add:{I:2,M:1} },
+      { t:'和喜欢的人，漫无目的地走', add:{S:2,M:1} },
+      { t:'独自完成一件小事，很满足', add:{I:2,C:1} }
+    ]},
+    { q:'一场突如其来的雨，你会？', opts:[
+      { t:'干脆冲进雨里', add:{E:2,C:1} },
+      { t:'找个屋檐躲着，听雨声', add:{I:2,M:1} },
+      { t:'给在意的人发一句「下雨了」', add:{S:2,M:1} },
+      { t:'淋一点也没关系，慢慢走', add:{C:1,E:1,I:1} }
+    ]},
+    { q:'你更容易被什么样的人吸引？', opts:[
+      { t:'热烈、直接、眼里有光', add:{E:2,S:1} },
+      { t:'安静、温柔、说话很轻', add:{I:2,M:1} },
+      { t:'聪明、有趣、总能接住你', add:{C:2,S:1} },
+      { t:'稳定、可靠、让你安心', add:{I:2,M:1} }
+    ]},
+    { q:'如果有一封没有署名的信，你希望它写着？', opts:[
+      { t:'「我一直在找你」', add:{S:2,M:1} },
+      { t:'「今晚的月亮很好看」', add:{M:2,I:1} },
+      { t:'「谢谢你，曾经照亮我」', add:{M:2,I:1} },
+      { t:'「别怕，我在」', add:{S:2,M:1} }
+    ]},
+    { q:'你更喜欢哪种告别？', opts:[
+      { t:'用力拥抱，然后转身', add:{S:2,E:1} },
+      { t:'轻轻说一句「再见」', add:{M:1,I:1} },
+      { t:'什么都不说，各自走远', add:{I:2,M:1} },
+      { t:'约好下次见面', add:{S:2,E:1} }
+    ]},
+    { q:'一个人待着的时候，你常做什么？', opts:[
+      { t:'听歌，让情绪慢慢漫出来', add:{M:2,I:1} },
+      { t:'看书或看电影，进入别人的世界', add:{I:2,C:1} },
+      { t:'发呆，看云，或只是看窗外', add:{I:1,M:1,C:1} },
+      { t:'收拾房间，把生活理顺', add:{I:2,C:1} }
+    ]},
+    { q:'如果人生是一部电影，你希望它的基调是？', opts:[
+      { t:'明亮、热烈，有奔跑的镜头', add:{E:2,S:1} },
+      { t:'温柔、缓慢，有很多长镜头', add:{M:2,I:1} },
+      { t:'略带忧郁，但结尾有光', add:{M:2,C:1} },
+      { t:'平静、克制，留白很多', add:{I:2,C:1} }
+    ]},
+    { q:'你更喜欢哪种夜晚？', opts:[
+      { t:'城市灯火，车流不息', add:{E:1,S:2,C:1} },
+      { t:'海边篝火，听浪声', add:{S:2,M:1,E:1} },
+      { t:'山里星空，安静得能听见风', add:{I:2,M:1,C:1} },
+      { t:'家里一盏灯，一本书', add:{I:2,M:2} }
+    ]},
+    { q:'如果可以去一个地方生活一年，你会选？', opts:[
+      { t:'海边小镇', add:{C:2,M:1,E:1} },
+      { t:'下雪的北方', add:{M:2,I:1,C:1} },
+      { t:'热闹的大城市', add:{E:2,S:2,C:1} },
+      { t:'山里的木屋', add:{I:2,C:1,M:1} }
+    ]},
+    { q:'你更容易记住一个人的？', opts:[
+      { t:'笑声', add:{E:2,S:1} },
+      { t:'眼睛', add:{M:2,I:1} },
+      { t:'说话的方式', add:{I:1,C:2} },
+      { t:'身上的味道和温度', add:{M:2,S:1} }
+    ]},
+    { q:'看到一朵很美的云，你会？', opts:[
+      { t:'拍下来，发给别人', add:{S:2,E:1} },
+      { t:'站着看很久', add:{I:2,M:1,C:1} },
+      { t:'想它像什么', add:{C:2,I:1} },
+      { t:'看一眼，继续走', add:{I:2,M:-1} }
+    ]},
+    { q:'你理想中的告白，是？', opts:[
+      { t:'当面，认真地说', add:{S:2,E:1} },
+      { t:'写一封信', add:{M:2,I:1} },
+      { t:'一起走很久，忽然开口', add:{M:1,I:1,S:1} },
+      { t:'不用说出来，彼此都懂', add:{I:2,M:1} }
+    ]},
+    { q:'如果时间可以停住一刻，你希望是？', opts:[
+      { t:'大笑的瞬间', add:{E:2,S:1} },
+      { t:'被拥抱的瞬间', add:{S:2,M:1} },
+      { t:'一个人看海的瞬间', add:{I:2,M:1,C:1} },
+      { t:'雨停后，空气很干净的瞬间', add:{M:1,C:2,I:1} }
+    ]},
+    { q:'你更愿意把心事告诉？', opts:[
+      { t:'很多朋友，说出来就轻松了', add:{S:2,E:1} },
+      { t:'一两个最信任的人', add:{S:1,M:1} },
+      { t:'日记，或者树洞', add:{I:2,M:1} },
+      { t:'谁都不说，自己消化', add:{I:2,M:1} }
+    ]},
+    { q:'你更喜欢哪种天气？', opts:[
+      { t:'大晴天', add:{E:2,S:1} },
+      { t:'下雨天', add:{I:2,M:1} },
+      { t:'下雪天', add:{M:1,C:2,I:1} },
+      { t:'有风的阴天', add:{C:1,I:2,M:1} }
+    ]},
+    { q:'如果收到一份礼物，你更在意？', opts:[
+      { t:'对方花了心思', add:{M:2,S:1} },
+      { t:'实用，刚好需要', add:{I:2,C:1} },
+      { t:'惊喜感', add:{E:2,C:1} },
+      { t:'是对方亲手做的', add:{M:2,I:1} }
+    ]},
+    { q:'你更向往哪种关系？', opts:[
+      { t:'热闹、有趣，一起冒险', add:{E:2,S:2,C:1} },
+      { t:'安静、稳定，彼此依靠', add:{I:1,M:2,S:1} },
+      { t:'自由、独立，互相欣赏', add:{I:2,C:1} },
+      { t:'深刻、专一，灵魂契合', add:{M:2,I:1} }
+    ]},
+    { q:'一个人走夜路时，你会？', opts:[
+      { t:'加快脚步，快点到家', add:{M:2,I:1} },
+      { t:'戴上耳机，慢慢走', add:{I:2,M:1} },
+      { t:'给朋友打电话', add:{S:2,M:1} },
+      { t:'抬头看看月亮', add:{C:1,M:1,I:1} }
+    ]},
+    { q:'你希望别人怎么形容你？', opts:[
+      { t:'明亮、有活力', add:{E:2,S:1} },
+      { t:'温柔、让人安心', add:{M:2,S:1,I:1} },
+      { t:'有趣、有想法', add:{C:2,E:1,S:1} },
+      { t:'可靠、有分寸', add:{I:2,M:1} }
+    ]}
+  ];
+
+  var QUESTIONS = POOL;
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function pickQuestions(){ return shuffle(POOL.slice()).slice(0, 12); }
+
+  var DOGS = [
+    { id:'jinmao', name:'金毛', title:'人间小太阳', fur:'#E7B36B', muzzle:'#FFF3DD', ear:'floppy', patch:null, tongue:true,
+      vec:{E:85,S:90,I:30,M:55,C:55}, keywords:['温暖','黏人','情绪稳定','爱照顾人'],
+      oneLiner:'走到哪里，就把阳光带到哪里。',
+      desc:'你是那种一出现就让气氛变好的人。习惯先照顾别人的情绪，也擅长把难过的事轻轻接住。你不太记仇，愿意为在意的人多走两步。',
+      quirk:'太容易心软，别人一撒娇就没辙。',
+      guide:'记得也把温柔分一点给自己；你不必永远是那个撑住全场的人。',
+      best:{id:'chai',name:'柴犬'} },
+    { id:'labrador', name:'拉布拉多', title:'靠谱饭搭子', fur:'#D9B382', muzzle:'#FFF3DD', ear:'floppy', patch:null, tongue:true,
+      vec:{E:70,S:85,I:35,M:35,C:50}, keywords:['可靠','好脾气','爱吃','稳'],
+      oneLiner:'不声不响，但永远准时出现。',
+      desc:'你是朋友口中「有事找他准没错」的那种人。情绪稳定、执行力强，不抢风头，却总把事办妥。对吃和快乐，都有朴素的执着。',
+      quirk:'容易把别人的事，排在自己前面。',
+      guide:'偶尔也任性一点，先满足自己一次。',
+      best:{id:'jinmao',name:'金毛'} },
+    { id:'bianmu', name:'边牧', title:'操心学霸', fur:'#3F3B38', muzzle:'#FFFFFF', ear:'pointy', patch:'#FFFFFF', tongue:false,
+      vec:{E:88,S:55,I:65,M:70,C:88}, keywords:['聪明','目标感','高敏','爱规划'],
+      oneLiner:'脑子转得比谁都快，也操心最多。',
+      desc:'你观察力强、反应快，总能在事情变糟之前想到三步之后。对在乎的人和事，你愿意操心到细节。只是脑子很难真正「关机」。',
+      quirk:'想太多，容易把自己累到。',
+      guide:'允许一些事「差不多就好」，你不是所有问题的负责人。',
+      best:{id:'taidi',name:'泰迪'} },
+    { id:'hashiqi', name:'哈士奇', title:'快乐拆家王', fur:'#8FA6B8', muzzle:'#F4F6F8', ear:'pointy', patch:null, tongue:true,
+      vec:{E:92,S:80,I:80,M:30,C:92}, keywords:['自由','社牛','脑洞大','反骨'],
+      oneLiner:'规则是给人看的，快乐是自己的。',
+      desc:'你精力旺盛、点子多，讨厌被框住。人群里你常常是那个把气氛点燃的人，哪怕偶尔「拆家」，也让人气不起来。',
+      quirk:'三分钟热度，计划常常说变就变。',
+      guide:'给热爱的事多一点耐心，你的能量值得被好好安放。',
+      best:{id:'bianmu',name:'边牧'} },
+    { id:'chai', name:'柴犬', title:'高冷小老板', fur:'#D89A5B', muzzle:'#FFF3DD', ear:'pointy', patch:null, tongue:false,
+      vec:{E:50,S:30,I:85,M:50,C:55}, keywords:['独立','有主见','边界感','外冷内热'],
+      oneLiner:'我可以爱你，但请保持一点距离。',
+      desc:'你不爱凑热闹，有自己的节奏和审美。看起来高冷，其实把在乎藏得很深。一旦认定一个人，会用自己的方式默默守着。',
+      quirk:'嘴硬，心里想挽留，嘴上说「随便」。',
+      guide:'偶尔把「我在乎」说出口，别人会更懂你。',
+      best:{id:'jinmao',name:'金毛'} },
+    { id:'keji', name:'柯基', title:'元气短腿', fur:'#E0A35C', muzzle:'#FFF3DD', ear:'pointy', patch:null, tongue:true,
+      vec:{E:85,S:85,I:50,M:35,C:70}, keywords:['元气','爱热闹','小固执','乐天'],
+      oneLiner:'腿短，不妨碍我快乐奔跑。',
+      desc:'你自带快乐体质，走到哪都能和人聊起来。有点小倔，认定的事会认真做到底。个子不高（气场很高）。',
+      quirk:'嘴上说「随便」，其实心里早有答案。',
+      guide:'你的热情很珍贵，但也记得给自己留点电。',
+      best:{id:'labrador',name:'拉布拉多'} },
+    { id:'samo', name:'萨摩耶', title:'微笑天使', fur:'#F1ECE2', muzzle:'#FFFFFF', ear:'fluff', patch:null, tongue:false,
+      vec:{E:75,S:90,I:30,M:40,C:55}, keywords:['亲和','阳光','好相处','治愈'],
+      oneLiner:'一笑，世界就软下来了。',
+      desc:'你天生自带亲和力，是人群里的「润滑剂」。不爱冲突，擅长让每个人都舒服。你的笑很有感染力，能接住别人的坏情绪。',
+      quirk:'太怕让人失望，常常委屈自己。',
+      guide:'拒绝不等于伤害，你的感受同样重要。',
+      best:{id:'chai',name:'柴犬'} },
+    { id:'taidi', name:'泰迪', title:'撒娇小机灵', fur:'#C98E5B', muzzle:'#EBCBA4', ear:'floppy', patch:null, tongue:true,
+      vec:{E:70,S:85,I:30,M:70,C:80}, keywords:['聪明','黏人','会撒娇','情绪细腻'],
+      oneLiner:'我有一百种方式，让你忍不住心软。',
+      desc:'你聪明、机灵，也很会察言观色。看起来活泼，其实心思很细，很在意对方有没有回应。你擅长用一点点小撒娇，把关系变得柔软。',
+      quirk:'太黏人，一被冷落就开始胡思乱想。',
+      guide:'记得给彼此一点空间；你不必靠撒娇来证明被爱。',
+      best:{id:'bianmu',name:'边牧'} },
+    { id:'qiutian', name:'秋田', title:'沉静守护者', fur:'#E1B37C', muzzle:'#F4E3CC', ear:'pointy', patch:null, tongue:false,
+      vec:{E:45,S:50,I:80,M:45,C:30}, keywords:['忠诚','沉稳','慢热','有原则'],
+      oneLiner:'我不常说爱，但我会一直站在你身后。',
+      desc:'你不爱声张，情绪也很少大起大落。看起来有点距离感，其实一旦认定，就会默默守很久。你有自己的原则，不轻易被外界动摇。',
+      quirk:'太能忍，难受的时候也习惯自己扛。',
+      guide:'偶尔把心事说出口；真正在意你的人，愿意分担。',
+      best:{id:'bomei',name:'博美'} },
+    { id:'bomei', name:'博美', title:'炸毛小戏精', fur:'#E8C07A', muzzle:'#FFF3DD', ear:'fluff', patch:null, tongue:true,
+      vec:{E:70,S:55,I:50,M:80,C:80}, keywords:['机灵','敏感','表达欲强','小戏精'],
+      oneLiner:'我情绪很满，但爱你也是真的。',
+      desc:'你情感丰富、表达力强，开心和难过都写在脸上。有点小敏感，却很会察言观色。你的「戏剧化」，其实是在认真对待每一份感受。',
+      quirk:'容易想多，一句无心的话能琢磨一晚上。',
+      guide:'你的敏感不是缺点，但别让它替你做决定。',
+      best:{id:'qiutian',name:'秋田'} }
+  ];
+
+  var DIMS = ['E','S','I','M','C'];
+
+  /* ================= 工具 ================= */
+  function $(id){ return document.getElementById(id); }
+  function dimRange(dim, list){
+    var lo = 0, hi = 0;
+    list.forEach(function(q){
+      var vals = q.opts.map(function(o){ return o.add[dim] || 0; });
+      hi += Math.max(0, Math.max.apply(null, vals));
+      lo += Math.min(0, Math.min.apply(null, vals));
+    });
+    return { lo: lo, hi: hi };
+  }
+  var RANGES = {};
+  function computeRanges(){
+    DIMS.forEach(function(d){ RANGES[d] = dimRange(d, QUESTIONS); });
+  }
+  computeRanges();
+
+  function computeResult(){
+    var raw = {E:0,S:0,I:0,M:0,C:0};
+    QUESTIONS.forEach(function(q, i){
+      var pick = answers[i] != null ? answers[i] : 0;
+      var add = q.opts[pick].add;
+      DIMS.forEach(function(d){ raw[d] += (add[d] || 0); });
+    });
+    var norm = {};
+    DIMS.forEach(function(d){
+      var r = RANGES[d];
+      var span = r.hi - r.lo;
+      var n = span > 0 ? (raw[d] - r.lo) / span * 100 : 50;
+      norm[d] = Math.max(0, Math.min(100, n));
+    });
+    var best = null, bestDist = Infinity;
+    DOGS.forEach(function(dog){
+      var dist = 0;
+      DIMS.forEach(function(d){ var diff = norm[d] - dog.vec[d]; dist += diff * diff; });
+      dist = Math.sqrt(dist);
+      if (dist < bestDist){ bestDist = dist; best = dog; }
+    });
+    var maxDist = Math.sqrt(5 * 100 * 100);
+    var match = Math.round(100 - (bestDist / maxDist) * 45);
+    match = Math.max(55, Math.min(98, match));
+    return { dog: best, match: match, norm: norm };
+  }
+
+  /* ================= 状态 ================= */
+  var answers = [];
+  var currentQ = 0;
+  var currentResult = null;
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ================= 答题 ================= */
+  function renderQuestion(){
+    var q = QUESTIONS[currentQ];
+    $('q-count').textContent = '第 ' + (currentQ + 1) + ' / ' + QUESTIONS.length + ' 题';
+    $('progress-bar').style.width = ((currentQ) / QUESTIONS.length * 100) + '%';
+    $('q-index').textContent = 'Q' + (currentQ + 1);
+    $('q-text').textContent = q.q;
+    var box = $('options');
+    box.innerHTML = '';
+    var letters = ['A','B','C','D'];
+    q.opts.forEach(function(opt, i){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'opt' + (answers[currentQ] === i ? ' selected' : '');
+      btn.innerHTML = '<span class="badge">' + letters[i] + '</span><span class="txt">' + opt.t + '</span>';
+      btn.addEventListener('click', function(){
+        answers[currentQ] = i;
+        btn.parentNode.querySelectorAll('.opt').forEach(function(b){ b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        setTimeout(function(){
+          if (currentQ < QUESTIONS.length - 1){ currentQ++; renderQuestion(); }
+          else { finish(); }
+        }, 240);
+      });
+      box.appendChild(btn);
+    });
+    $('back-btn').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+  }
+
+  function finish(){
+    $('progress-bar').style.width = '100%';
+    currentResult = computeResult();
+    var r = currentResult, d = r.dog;
+    $('result-name').textContent = d.name;
+    $('result-title').textContent = '· ' + d.title + ' ·';
+    $('match').textContent = '与你的契合度 ' + r.match + '%';
+    $('result-tags').innerHTML = d.keywords.map(function(k){ return '<span class="tag">' + k + '</span>'; }).join('');
+    $('result-desc').textContent = d.desc;
+    $('result-quirk').textContent = d.quirk;
+    $('result-guide').textContent = d.guide;
+    $('result-best').textContent = '最适合和你一起玩的小狗：' + d.best.name + '。' + (d.id === 'chai' ? '一个主动靠近，一个慢慢卸下防备。' : '刚好，你们能把彼此照亮。');
+    $('result-cond').textContent = '愿意每天留一点时间给我；愿意在我闹脾气时，先抱抱我；愿意相信，我会一直陪着你。';
+    showScreen('screen-result');
+  }
+
+  /* ================= 领养卡 Canvas ================= */
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function wrapText(ctx, text, x, y, maxWidth, lineH){
+    var chars = text.split(''), line = '', cy = y;
+    for (var i = 0; i < chars.length; i++){
+      var test = line + chars[i];
+      if (ctx.measureText(test).width > maxWidth && line){
+        ctx.fillText(line, x, cy); line = chars[i]; cy += lineH;
+      } else { line = test; }
+    }
+    if (line){ ctx.fillText(line, x, cy); cy += lineH; }
+    return cy;
+  }
+  function drawTags(ctx, tags, cx, y){
+    ctx.font = '700 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    var padX = 22, gap = 14, h = 50;
+    var widths = tags.map(function(t){ return ctx.measureText(t).width + padX * 2; });
+    var total = widths.reduce(function(a, b){ return a + b; }, 0) + gap * (tags.length - 1);
+    var x = cx - total / 2;
+    tags.forEach(function(t, i){
+      var w = widths[i];
+      ctx.fillStyle = 'rgba(79,107,79,.12)';
+      roundRect(ctx, x, y - h / 2, w, h, 25); ctx.fill();
+      ctx.fillStyle = '#3C533C';
+      ctx.textAlign = 'center';
+      ctx.fillText(t, x + w / 2, y + 9);
+      x += w + gap;
+    });
+    ctx.textAlign = 'left';
+  }
+  function drawShareCard(){
+    if (!currentResult) return;
+    var res = currentResult, d = res.dog;
+    var c = $('share-canvas'), ctx = c.getContext('2d');
+    var W = c.width, H = c.height;
+
+    var g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#FFFBF2'); g.addColorStop(1, '#FBEFDD');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    // 边框
+    ctx.strokeStyle = 'rgba(51,40,31,.16)'; ctx.lineWidth = 4;
+    roundRect(ctx, 40, 40, W - 80, H - 80, 38); ctx.stroke();
+
+    // 顶部标签
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#6E7F6A';
+    ctx.font = '600 28px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('领 养 启 事', W / 2, 140);
+
+    // 主标题
+    ctx.fillStyle = '#2A2622';
+    ctx.font = '800 70px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('你要领养一只小狗吗？', W / 2, 238);
+
+    // 名字 & 称号
+    ctx.fillStyle = '#2A2622';
+    ctx.font = '800 58px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(d.name, W / 2, 364);
+    ctx.fillStyle = '#6E7F6A';
+    ctx.font = '600 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('· ' + d.title + ' ·', W / 2, 414);
+
+    // 契合度
+    ctx.fillStyle = '#4F6B4F';
+    ctx.font = '600 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('与你的契合度 ' + res.match + '%', W / 2, 460);
+
+    // 关键词
+    drawTags(ctx, d.keywords, W / 2, 506);
+
+    // 分割线
+    ctx.strokeStyle = 'rgba(51,40,31,.14)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(150, 556); ctx.lineTo(W - 150, 556); ctx.stroke();
+
+    // 小节
+    function section(title, text, startY){
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#2A2622';
+      ctx.font = '700 27px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillText(title, 150, startY);
+      ctx.fillStyle = '#565049';
+      ctx.font = '400 25px "PingFang SC","Microsoft YaHei",sans-serif';
+      return wrapText(ctx, text, 150, startY + 38, W - 300, 34);
+    }
+    var y = section('性格解析', d.desc, 604);
+    y = section('领养须知', d.quirk, y + 24);
+    y = section('相处建议', d.guide, y + 24);
+    y = section('领养条件', '愿意每天留一点时间给我；愿意在我闹脾气时，先抱抱我；愿意相信，我会一直陪着你。', y + 24);
+
+    // 领养人签名
+    var sigY = Math.max(y + 34, 1170);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#2A2622';
+    ctx.font = '700 28px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('领养人：', 150, sigY);
+    ctx.strokeStyle = 'rgba(51,40,31,.4)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(280, sigY + 8); ctx.lineTo(600, sigY + 8); ctx.stroke();
+
+    // 底部
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4F6B4F';
+    ctx.font = '700 32px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('签下名字，我就跟你回家', W / 2, H - 120);
+
+    var site = location.protocol === 'file:' ? '你也来测测' : location.host;
+    ctx.fillStyle = '#6E7F6A';
+    ctx.font = '500 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText('测测你是哪种小狗 · ' + site, W / 2, H - 72);
+  }
+
+  /* ================= 文案 / 下载 ================= */
+  function buildCopyText(){
+    if (!currentResult) return '';
+    var d = currentResult.dog;
+    var url = location.protocol === 'file:' ? '' : location.href.split('#')[0];
+    return '你要领养一只小狗吗？\n'
+      + '我测出来是「' + d.name + ' · ' + d.title + '」。\n'
+      + '如果你愿意，就签下名字把我领回家吧——我会一直陪着你。\n'
+      + '你也来测测你是哪只小狗 👉 ' + (url || '（链接）');
+  }
+  function copyText(text){
+    function done(){ toast('已复制，去粘贴给 TA 吧'); }
+    function fail(){ toast('复制失败，请长按手动复制'); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, fail);
+      } else { fail(); }
+    } catch(e){ fail(); }
+  }
+  function toast(msg){
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(function(){ t.classList.remove('show'); }, 1900);
+  }
+
+  /* ================= 事件 ================= */
+  $('start-btn').addEventListener('click', function(){
+    QUESTIONS = pickQuestions(); computeRanges();
+    answers = []; currentQ = 0; currentResult = null;
+    renderQuestion(); showScreen('screen-quiz');
+  });
+  $('back-btn').addEventListener('click', function(){
+    if (currentQ > 0){ currentQ--; renderQuestion(); }
+    else { showScreen('screen-landing'); }
+  });
+  $('retake-btn').addEventListener('click', function(){
+    QUESTIONS = pickQuestions(); computeRanges();
+    answers = []; currentQ = 0; currentResult = null;
+    renderQuestion(); showScreen('screen-quiz');
+  });
+  $('share-btn').addEventListener('click', function(){
+    drawShareCard();
+    $('share-modal').classList.add('show');
+  });
+  $('close-modal').addEventListener('click', function(){ $('share-modal').classList.remove('show'); });
+  $('download-btn').addEventListener('click', function(){
+    if (!currentResult) return;
+    var a = document.createElement('a');
+    a.download = '分享卡-' + currentResult.dog.name + '.png';
+    a.href = $('share-canvas').toDataURL('image/png');
+    a.click();
+    toast('正在保存你的分享卡…');
+  });
+  $('copy-btn').addEventListener('click', function(){ copyText(buildCopyText()); });
+  $('copy2-btn').addEventListener('click', function(){ copyText(buildCopyText()); });
+  $('share-modal').addEventListener('click', function(e){ if (e.target === $('share-modal')) $('share-modal').classList.remove('show'); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && $('share-modal').classList.contains('show')) $('share-modal').classList.remove('show');
+  });
+})();
+</script>
+</body>
+</html>
