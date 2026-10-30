@@ -93,10 +93,13 @@
     transition:border-color .16s var(--ease),background-color .16s var(--ease);}
   .opt .badge{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:14px;
     background:var(--accent-soft);color:var(--accent-dk);transition:background-color .16s var(--ease),color .16s var(--ease);}
-  .opt:hover{border-color:var(--accent);background:var(--accent-soft);}
-  .opt:hover .badge{background:var(--accent);color:#fff;}
+  @media (hover:hover){
+    .opt:hover{border-color:var(--accent);}
+    .opt:hover .badge{background:var(--accent-soft);color:var(--accent-dk);}
+  }
   .opt.selected{border-color:var(--accent);background:var(--accent-soft);}
   .opt.selected .badge{background:var(--accent);color:#fff;}
+  .opt.selected::after{content:"✓";margin-left:8px;color:var(--accent);font-weight:800;font-size:15px;}
   .opt:active{transform:scale(.985);}
   .opt .txt{flex:1;}
 
